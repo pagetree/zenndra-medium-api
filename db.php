@@ -66,22 +66,43 @@ function db(): PDO
     $host = (string) $parts['host'];
     $port = isset($parts['port']) ? (int) $parts['port'] : 5432;
     $name = ltrim((string) $parts['path'], '/');
-    $user = (string) ($parts['user'] ?? '');
-    $pass = (string) ($parts['pass'] ?? '');
+    $user = urldecode((string) ($parts['user'] ?? ''));
+    $pass = urldecode((string) ($parts['pass'] ?? ''));
 
-    $dsn = 'pgsql:host=' . $host . ';port=' . $port . ';dbname=' . $name . ';sslmode=require';
-
-    try {
-        $pdo = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
-    } catch (PDOException $e) {
-        fail('database unavailable', 503);
+    $ssl = 'require';
+    if (!empty($parts['query'])) {
+        parse_str((string) $parts['query'], $query);
+        if (!empty($query['sslmode']) && is_string($query['sslmode'])) {
+            $ssl = $query['sslmode'];
+        }
+    }
+    if (str_ends_with($host, '.railway.internal')) {
+        $ssl = 'disable';
     }
 
-    return $pdo;
+    $modes = array_values(array_unique([$ssl, 'require', 'prefer', 'disable']));
+    $opts = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+
+    $last = null;
+    foreach ($modes as $mode) {
+        try {
+            $pdo = new PDO(
+                'pgsql:host=' . $host . ';port=' . $port . ';dbname=' . $name . ';sslmode=' . $mode,
+                $user,
+                $pass,
+                $opts
+            );
+            return $pdo;
+        } catch (PDOException $e) {
+            $last = $e;
+        }
+    }
+
+    fail('database unavailable', 503);
 }
 
 function db_missing_table(PDOException $e): bool
