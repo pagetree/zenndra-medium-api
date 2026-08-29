@@ -1,0 +1,12 @@
+{
+  "name": "zenndra-mpp",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "hono": "^4",
+    "mppx": "*"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

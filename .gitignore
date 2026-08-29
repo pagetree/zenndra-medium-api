@@ -1,4 +1,7 @@
 .env
 data/posts.json
 *.sql
+node_modules/
+.wrangler/
+
 
