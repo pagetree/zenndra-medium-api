@@ -26,9 +26,6 @@
         const body = document.createElement("p");
         body.className = "post-body";
         body.textContent = post.body || "";
-        if (post.body_truncated) {
-            body.classList.add("is-truncated");
-        }
 
         const meta = document.createElement("p");
         meta.className = "post-meta";

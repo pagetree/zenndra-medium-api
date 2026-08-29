@@ -39,12 +39,6 @@
     color: var(--ink);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    max-height: calc(var(--text-lead) * 6em);
-    overflow: hidden;
-}
-
-.post-body.is-truncated::after {
-    content: "…";
 }
 
 .post-meta {

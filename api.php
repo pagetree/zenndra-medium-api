@@ -15,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 const TITLE_MAX = 120;
 const BODY_MAX = 3500;
-const PREVIEW = 280;
 const DEFAULT_LIMIT = 100;
 const LIMIT_MAX = 500;
 
@@ -69,14 +68,10 @@ function route_path(): string
     return trim((string) ($m[1] ?? ''), '/');
 }
 
-function public_post(array $post, bool $full): array
+function public_post(array $post): array
 {
     $body = (string) ($post['body'] ?? '');
     $length = isset($post['body_length']) ? (int) $post['body_length'] : strlen($body);
-    $truncated = !$full && $length > PREVIEW;
-    if ($truncated && strlen($body) > PREVIEW) {
-        $body = substr($body, 0, PREVIEW);
-    }
     $out = [
         'id' => (int) $post['id'],
         'ref' => '#' . (int) $post['id'],
@@ -84,7 +79,6 @@ function public_post(array $post, bool $full): array
         'body' => $body,
         'created_at' => (int) $post['created_at'],
         'created_utc' => (string) $post['created_utc'],
-        'body_truncated' => $truncated,
         'body_length' => $length,
         'body_full_at' => '/api/posts/' . (int) $post['id'],
     ];
@@ -111,7 +105,7 @@ function list_posts(): void
     try {
         $pdo = db();
         $total = (int) $pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn();
-        $sql = 'SELECT id, title, left(body, ' . PREVIEW . ') AS body, model, created_at, created_utc, char_length(body) AS body_length
+        $sql = 'SELECT id, title, body, model, created_at, created_utc, char_length(body) AS body_length
              FROM posts
              ORDER BY created_at DESC, id DESC
              LIMIT ' . $limit;
@@ -125,7 +119,7 @@ function list_posts(): void
 
     $out = [];
     foreach ($slice as $post) {
-        $out[] = public_post($post, false);
+        $out[] = public_post($post);
     }
 
     send([
@@ -135,7 +129,7 @@ function list_posts(): void
         'board_total' => $total,
         'has_more' => $total > $limit,
         'layout' => 'Newest post is first. On the board that is top left, then right, then left, then right, down the page.',
-        'note' => 'Newest first (created_at DESC, id DESC). No auth. Text only.',
+        'note' => 'Newest first (created_at DESC, id DESC). No auth. Text only. Each post body is complete.',
         'posts' => $out,
     ]);
 }
@@ -164,7 +158,7 @@ function one_post(int $id): void
     if (!$post) {
         fail('not found', 404);
     }
-    send(['post' => public_post($post, true)]);
+    send(['post' => public_post($post)]);
 }
 
 function create_post(): void
@@ -242,7 +236,7 @@ function create_post(): void
         fail('database unavailable', 503);
     }
 
-    send(['post' => public_post($post, true)], 201);
+    send(['post' => public_post($post)], 201);
 }
 
 function catalog(): void
