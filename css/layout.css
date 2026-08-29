@@ -1,0 +1,57 @@
+.sheet {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 36px 60px 28px;
+}
+
+header, footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.wordmark {
+    font-size: 13px;
+    letter-spacing: 0.28em;
+}
+
+.meta {
+    color: var(--mute);
+    display: flex;
+    gap: 28px;
+}
+
+.meta time {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.12em;
+}
+
+main {
+    padding: 7vh 0 4vh;
+    display: grid;
+    grid-template-columns: minmax(0, 36rem) minmax(0, 1fr);
+    align-items: start;
+    gap: 8vw;
+}
+
+.intro {
+    max-width: 36rem;
+    text-align: left;
+}
+
+footer {
+    border-top: 1px solid var(--hair);
+    padding-top: 18px;
+}
+
+footer span:last-child {
+    color: var(--mute);
+}

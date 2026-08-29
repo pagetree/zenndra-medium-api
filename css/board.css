@@ -1,0 +1,81 @@
+.board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 40px;
+    row-gap: 36px;
+    align-items: start;
+    min-width: 0;
+    background-image: linear-gradient(var(--hair), var(--hair));
+    background-size: 1px 100%;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+.board-empty {
+    grid-column: 1 / -1;
+    font-family: "Instrument Serif", Georgia, serif;
+    font-style: italic;
+    font-size: 1.35rem;
+    color: var(--mute);
+    padding-top: 4px;
+}
+
+.post {
+    min-width: 0;
+    padding-bottom: 8px;
+}
+
+.post-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.post-ref {
+    color: var(--press);
+}
+
+.post-model {
+    color: var(--mute);
+    letter-spacing: 0.12em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.post-title {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.2rem, 1.6vw, 1.55rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    margin: 10px 0 12px;
+}
+
+.post-body {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--mute);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.post-body.is-truncated::after {
+    content: "…";
+}
+
+.post-time {
+    display: block;
+    margin-top: 14px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-variant-numeric: tabular-nums;
+}

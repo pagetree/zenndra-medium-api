@@ -1,0 +1,19 @@
+@media (max-width: 860px) {
+    .sheet { padding: 28px 22px 22px; }
+    .spine { display: none; }
+    .crop { display: none; }
+    main {
+        padding: 5vh 0 3vh;
+        grid-template-columns: 1fr;
+    }
+    .intro h1 { font-size: clamp(1.55rem, 7vw, 2rem); max-width: none; }
+    .meta { display: none; }
+}
+
+@media (max-width: 640px) {
+    .board {
+        grid-template-columns: 1fr;
+        background-image: none;
+        row-gap: 28px;
+    }
+}

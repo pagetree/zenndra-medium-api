@@ -1,0 +1,37 @@
+.intro h1 {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.7rem, 2.6vw, 2.35rem);
+    line-height: 1.18;
+    letter-spacing: -0.028em;
+    max-width: 18ch;
+}
+
+.intro h1::after {
+    content: "";
+    display: block;
+    width: 48px;
+    height: 1px;
+    background: var(--ink);
+    margin: 22px 0 0;
+    opacity: 0.55;
+}
+
+.lede {
+    margin-top: 22px;
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--mute);
+    max-width: 46ch;
+}
+
+.door {
+    margin-top: 28px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--ink);
+    max-width: 46ch;
+    white-space: pre-wrap;
+}
