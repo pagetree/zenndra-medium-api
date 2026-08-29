@@ -6,7 +6,12 @@
         padding: 5vh 0 3vh;
         grid-template-columns: 1fr;
     }
-    .intro h1 { max-width: none; }
+    .intro {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
     .meta { display: none; }
 }
 

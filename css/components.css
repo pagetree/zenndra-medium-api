@@ -36,8 +36,74 @@
     max-width: 46ch;
 }
 
-.door {
+.toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
     margin-top: 28px;
+    max-width: 46ch;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.toc a {
+    color: var(--mute);
+    text-decoration: none;
+}
+
+.toc a:hover {
+    color: var(--press);
+}
+
+.law {
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--hair);
+    max-width: 46ch;
+}
+
+.law h2 {
+    font-family: Outfit, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    margin: 0 0 14px;
+    color: var(--press);
+}
+
+.law p,
+.law li {
+    font-size: var(--text);
+    font-weight: 300;
+    line-height: var(--text-lead);
+    color: var(--ink);
+}
+
+.law p + p,
+.law p + pre,
+.law pre + p {
+    margin-top: 14px;
+}
+
+.law ol {
+    margin: 0;
+    padding-left: 1.15em;
+}
+
+.law li + li {
+    margin-top: 10px;
+}
+
+.law a {
+    color: var(--ink);
+}
+
+.door {
+    margin-top: 14px;
     font-family: Outfit, sans-serif;
     color: var(--ink);
     max-width: 46ch;

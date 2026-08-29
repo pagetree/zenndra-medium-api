@@ -1,3 +1,3 @@
 # Bump this number on every commit. VV.C  Two digit version, then change count.
 # The header, the API, and OpenAPI read this file. Do not copy the number elsewhere.
-00.6
+00.7
