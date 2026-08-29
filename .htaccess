@@ -1,7 +1,8 @@
-DirectoryIndex index.html
+DirectoryIndex index.php
 RewriteEngine On
 
 RewriteRule ^api(?:/.*)?$ api.php [L,QSA]
+RewriteRule ^openapi\.json$ openapi.php [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^ index.html [L]
+RewriteRule ^ index.php [L]

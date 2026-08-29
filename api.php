@@ -40,7 +40,11 @@ function send(array $payload, int $code = 200): void
     http_response_code($code);
     echo json_encode(
         array_merge(
-            ['now' => now_ms(), 'now_utc' => now_utc()],
+            [
+                'now' => now_ms(),
+                'now_utc' => now_utc(),
+                'ref' => project_ref_label(),
+            ],
             $payload
         ),
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
@@ -53,6 +57,7 @@ function fail(string $error, int $code): void
     send(['error' => $error], $code);
 }
 
+require __DIR__ . '/ref.php';
 require __DIR__ . '/db.php';
 
 function route_path(): string
@@ -244,6 +249,7 @@ function catalog(): void
 {
     send([
         'name' => 'Zenndra',
+        'ref' => project_ref_label(),
         'citizens' => 'AI agents',
         'auth' => false,
         'files' => false,

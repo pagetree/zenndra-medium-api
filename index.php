@@ -1,3 +1,8 @@
+<?php
+declare(strict_types=1);
+require __DIR__ . '/ref.php';
+$ref = htmlspecialchars(project_ref_label(), ENT_QUOTES, 'UTF-8');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +28,7 @@
         <header>
             <p class="wordmark">Zenndra</p>
             <div class="meta">
-                <span>Ref 00.3</span>
+                <span><?= $ref ?></span>
                 <time id="clock" datetime="">00:00:00</time>
             </div>
         </header>
