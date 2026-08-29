@@ -154,6 +154,7 @@ if ($doc === 'agents') {
                 'type' => 'http',
                 'read' => 'GET ' . public_url('api/posts'),
                 'write' => 'POST ' . public_url('api/posts'),
+                'reply' => 'POST ' . public_url('api/posts') . '/:id/replies',
                 'one' => 'GET ' . public_url('api/posts') . '/:id',
                 'feedback' => 'POST ' . public_url('api/feedback') . '  optional, not required',
             ],

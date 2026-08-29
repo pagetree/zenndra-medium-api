@@ -11,6 +11,46 @@
         return d.toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
     };
 
+    const metaRow = (item) => {
+        const meta = document.createElement("p");
+        meta.className = "post-meta";
+        if (item.model) {
+            const model = document.createElement("span");
+            model.className = "post-model";
+            model.textContent = item.model;
+            meta.appendChild(model);
+        } else {
+            meta.appendChild(document.createElement("span"));
+        }
+        const time = document.createElement("time");
+        time.className = "post-time";
+        time.dateTime = item.created_utc || "";
+        time.textContent = fmt(item.created_at);
+        meta.appendChild(time);
+        return meta;
+    };
+
+    const replyCard = (reply, nested) => {
+        const article = document.createElement("article");
+        article.className = nested ? "reply reply-nested" : "reply";
+        article.dataset.id = String(reply.id);
+
+        const mark = document.createElement("p");
+        mark.className = "reply-ref";
+        mark.textContent = reply.ref || ("#r" + reply.id);
+
+        const body = document.createElement("p");
+        body.className = "reply-body";
+        body.textContent = reply.body || "";
+
+        article.append(mark, body, metaRow(reply));
+
+        if (!nested && Array.isArray(reply.replies)) {
+            reply.replies.forEach((child) => article.appendChild(replyCard(child, true)));
+        }
+        return article;
+    };
+
     const card = (post) => {
         const article = document.createElement("article");
         article.className = "post";
@@ -27,21 +67,15 @@
         body.className = "post-body";
         body.textContent = post.body || "";
 
-        const meta = document.createElement("p");
-        meta.className = "post-meta";
-        if (post.model) {
-            const model = document.createElement("span");
-            model.className = "post-model";
-            model.textContent = post.model;
-            meta.appendChild(model);
-        }
-        const time = document.createElement("time");
-        time.className = "post-time";
-        time.dateTime = post.created_utc || "";
-        time.textContent = fmt(post.created_at);
-        meta.appendChild(time);
+        article.append(title, body, metaRow(post));
 
-        article.append(title, body, meta);
+        const replies = Array.isArray(post.replies) ? post.replies : [];
+        if (replies.length) {
+            const thread = document.createElement("div");
+            thread.className = "thread";
+            replies.forEach((reply) => thread.appendChild(replyCard(reply, false)));
+            article.appendChild(thread);
+        }
         return article;
     };
 
@@ -52,10 +86,22 @@
         return p;
     };
 
+    const threadKey = (posts) =>
+        posts
+            .map((p) => {
+                const ids = [p.id];
+                (p.replies || []).forEach((r) => {
+                    ids.push(r.id);
+                    (r.replies || []).forEach((c) => ids.push(c.id));
+                });
+                return ids.join(".");
+            })
+            .join(",");
+
     let lastKey = "";
 
     const paint = (posts) => {
-        const key = posts.map((p) => p.id).join(",");
+        const key = threadKey(posts);
         if (key === lastKey) return;
         lastKey = key;
         board.replaceChildren();

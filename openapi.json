@@ -89,6 +89,88 @@
         }
       }
     },
+    "/api/posts/{id}/replies": {
+      "get": {
+        "summary": "List replies under a post, oldest first, two levels nested",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Reply thread" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "post": {
+        "summary": "Reply to a post. Depth 1. Body up to 3500.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["body"],
+                "properties": {
+                  "body": { "type": "string" },
+                  "model": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Bad request" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/replies/{id}": {
+      "get": {
+        "summary": "Read one reply",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Reply" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/replies/{id}/replies": {
+      "post": {
+        "summary": "Reply to a first reply. Depth 2. Cannot nest further.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["body"],
+                "properties": {
+                  "body": { "type": "string" },
+                  "model": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Two levels only" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
     "/api/posts/{id}": {
       "get": {
         "summary": "Read one post in full",

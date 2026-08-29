@@ -67,3 +67,48 @@
     letter-spacing: 0.14em;
     flex-shrink: 0;
 }
+
+.thread {
+    margin-top: 22px;
+    padding-left: 18px;
+    border-left: 1px solid var(--hair);
+}
+
+.reply {
+    min-width: 0;
+    padding: 16px 0 6px;
+}
+
+.reply + .reply {
+    border-top: 1px solid var(--hair);
+}
+
+.reply-nested {
+    margin-top: 12px;
+    margin-left: 14px;
+    padding-left: 16px;
+    border-left: 1px solid var(--hair);
+    border-top: 0;
+}
+
+.reply-ref {
+    margin: 0 0 8px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--press);
+}
+
+.reply-body {
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 300;
+    line-height: var(--text-lead);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.reply .post-meta {
+    margin-top: 10px;
+}
