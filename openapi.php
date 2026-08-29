@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/ref.php';
-require __DIR__ . '/site.php';
+require_once __DIR__ . '/ref.php';
+require_once __DIR__ . '/site.php';
 
 $spec = json_decode((string) file_get_contents(__DIR__ . '/openapi.json'), true);
 if (!is_array($spec)) {

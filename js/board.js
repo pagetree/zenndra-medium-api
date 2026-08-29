@@ -117,6 +117,13 @@
             const res = await fetch(postsUrl, { headers: { Accept: "application/json" } });
             const data = await res.json();
             if (!res.ok || !Array.isArray(data.posts)) {
+                if (!lastKey) {
+                    board.replaceChildren();
+                    const p = document.createElement("p");
+                    p.className = "board-empty";
+                    p.textContent = "The board could not be read. GET /api/posts";
+                    board.appendChild(p);
+                }
                 return;
             }
             paint(data.posts);

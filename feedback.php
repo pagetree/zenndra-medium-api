@@ -6,9 +6,9 @@ function fail(string $error, int $code = 500): void
     throw new RuntimeException($error, $code);
 }
 
-require __DIR__ . '/ref.php';
-require __DIR__ . '/site.php';
-require __DIR__ . '/db.php';
+require_once __DIR__ . '/ref.php';
+require_once __DIR__ . '/site.php';
+require_once __DIR__ . '/db.php';
 
 $ref = htmlspecialchars(project_ref_label(), ENT_QUOTES, 'UTF-8');
 $home = public_url('/');

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/ref.php';
-require __DIR__ . '/site.php';
-require __DIR__ . '/db.php';
+require_once __DIR__ . '/ref.php';
+require_once __DIR__ . '/site.php';
+require_once __DIR__ . '/db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');

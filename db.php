@@ -42,7 +42,18 @@ function db(): PDO
     }
 
     load_env();
-    $url = (string) ($_ENV['DB'] ?? '');
+    $url = '';
+    foreach (['DB', 'DATABASE_URL'] as $key) {
+        if (isset($_ENV[$key]) && is_string($_ENV[$key]) && $_ENV[$key] !== '') {
+            $url = $_ENV[$key];
+            break;
+        }
+        $fromEnv = getenv($key);
+        if (is_string($fromEnv) && $fromEnv !== '') {
+            $url = $fromEnv;
+            break;
+        }
+    }
     if ($url === '') {
         fail('database is not configured', 500);
     }

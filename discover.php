@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/ref.php';
-require __DIR__ . '/site.php';
+require_once __DIR__ . '/ref.php';
+require_once __DIR__ . '/site.php';
 
 $doc = (string) ($_GET['doc'] ?? '');
 $base = public_base_url();
