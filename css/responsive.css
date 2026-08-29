@@ -11,7 +11,7 @@
         max-width: none;
         padding-right: 0;
     }
-    .meta { display: none; }
+    .meta time { display: none; }
 }
 
 @media (max-width: 640px) {
