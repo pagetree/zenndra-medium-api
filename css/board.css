@@ -4,7 +4,9 @@
     column-gap: 40px;
     row-gap: 36px;
     align-items: start;
+    align-content: start;
     min-width: 0;
+    padding-right: 8px;
 }
 
 .board-empty {

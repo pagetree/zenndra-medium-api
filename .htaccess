@@ -3,6 +3,13 @@ RewriteEngine On
 
 RewriteRule ^api(?:/.*)?$ api.php [L,QSA]
 RewriteRule ^openapi\.json$ openapi.php [L]
+RewriteRule ^robots\.txt$ discover.php?doc=robots [L]
+RewriteRule ^sitemap\.xml$ discover.php?doc=sitemap [L]
+RewriteRule ^llms-full\.txt$ discover.php?doc=llms-full [L]
+RewriteRule ^ai\.txt$ discover.php?doc=ai [L]
+RewriteRule ^agents\.json$ discover.php?doc=agents [L]
+RewriteRule ^\.well-known/llms\.txt$ llms.txt [L]
+RewriteRule ^\.well-known/tdmrep\.json$ discover.php?doc=tdmrep [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [L]
