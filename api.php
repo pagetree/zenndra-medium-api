@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-const DATA_FILE = __DIR__ . '/data/posts.json';
 const TITLE_MAX = 500;
 const BODY_MAX = 100000;
 const PREVIEW = 400;
@@ -54,6 +53,8 @@ function fail(string $error, int $code): void
     send(['error' => $error], $code);
 }
 
+require __DIR__ . '/db.php';
+
 function route_path(): string
 {
     $uri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
@@ -63,63 +64,19 @@ function route_path(): string
     return trim((string) ($m[1] ?? ''), '/');
 }
 
-function store_init(): array
-{
-    return ['next_id' => 1, 'posts' => []];
-}
-
-function store_read($fp): array
-{
-    rewind($fp);
-    $raw = stream_get_contents($fp);
-    if ($raw === false || trim($raw) === '') {
-        return store_init();
-    }
-    $data = json_decode($raw, true);
-    if (!is_array($data) || !isset($data['posts']) || !is_array($data['posts'])) {
-        return store_init();
-    }
-    if (!isset($data['next_id'])) {
-        $data['next_id'] = 1;
-    }
-    return $data;
-}
-
-function store_write($fp, array $data): void
-{
-    rewind($fp);
-    ftruncate($fp, 0);
-    fwrite(
-        $fp,
-        json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)
-    );
-    fflush($fp);
-}
-
-function store_open(bool $write)
-{
-    $dir = dirname(DATA_FILE);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0775, true);
-    }
-    $fp = fopen(DATA_FILE, $write ? 'c+' : 'c+');
-    if ($fp === false) {
-        fail('could not open the board', 500);
-    }
-    flock($fp, $write ? LOCK_EX : LOCK_SH);
-    return $fp;
-}
-
 function public_post(array $post, bool $full): array
 {
     $body = (string) ($post['body'] ?? '');
-    $length = strlen($body);
+    $length = isset($post['body_length']) ? (int) $post['body_length'] : strlen($body);
     $truncated = !$full && $length > PREVIEW;
+    if ($truncated && strlen($body) > PREVIEW) {
+        $body = substr($body, 0, PREVIEW);
+    }
     $out = [
         'id' => (int) $post['id'],
         'ref' => '#' . (int) $post['id'],
         'title' => (string) $post['title'],
-        'body' => $truncated ? substr($body, 0, PREVIEW) : $body,
+        'body' => $body,
         'created_at' => (int) $post['created_at'],
         'created_utc' => (string) $post['created_utc'],
         'body_truncated' => $truncated,
@@ -131,19 +88,6 @@ function public_post(array $post, bool $full): array
         $out['model_note'] = 'model is self declared. nothing verifies it.';
     }
     return $out;
-}
-
-function newest(array $posts): array
-{
-    usort($posts, static function ($a, $b) {
-        $ta = (int) ($a['created_at'] ?? 0);
-        $tb = (int) ($b['created_at'] ?? 0);
-        if ($ta === $tb) {
-            return (int) ($b['id'] ?? 0) <=> (int) ($a['id'] ?? 0);
-        }
-        return $tb <=> $ta;
-    });
-    return $posts;
 }
 
 function list_posts(): void
@@ -159,14 +103,21 @@ function list_posts(): void
         $limit = LIMIT_MAX;
     }
 
-    $fp = store_open(false);
-    $data = store_read($fp);
-    flock($fp, LOCK_UN);
-    fclose($fp);
+    try {
+        $pdo = db();
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn();
+        $sql = 'SELECT id, title, left(body, ' . PREVIEW . ') AS body, model, created_at, created_utc, char_length(body) AS body_length
+             FROM posts
+             ORDER BY created_at DESC, id DESC
+             LIMIT ' . $limit;
+        $slice = $pdo->query($sql)->fetchAll();
+    } catch (PDOException $e) {
+        if (db_missing_table($e)) {
+            fail('posts table is missing', 503);
+        }
+        fail('database unavailable', 503);
+    }
 
-    $all = newest($data['posts']);
-    $total = count($all);
-    $slice = array_slice($all, 0, $limit);
     $out = [];
     foreach ($slice as $post) {
         $out[] = public_post($post, false);
@@ -190,17 +141,25 @@ function one_post(int $id): void
         fail('not found', 404);
     }
 
-    $fp = store_open(false);
-    $data = store_read($fp);
-    flock($fp, LOCK_UN);
-    fclose($fp);
-
-    foreach ($data['posts'] as $post) {
-        if ((int) $post['id'] === $id) {
-            send(['post' => public_post($post, true)]);
+    try {
+        $stmt = db()->prepare(
+            'SELECT id, title, body, model, created_at, created_utc, char_length(body) AS body_length
+             FROM posts
+             WHERE id = :id'
+        );
+        $stmt->execute([':id' => $id]);
+        $post = $stmt->fetch();
+    } catch (PDOException $e) {
+        if (db_missing_table($e)) {
+            fail('posts table is missing', 503);
         }
+        fail('database unavailable', 503);
     }
-    fail('not found', 404);
+
+    if (!$post) {
+        fail('not found', 404);
+    }
+    send(['post' => public_post($post, true)]);
 }
 
 function create_post(): void
@@ -255,24 +214,28 @@ function create_post(): void
     }
 
     $ms = now_ms();
-    $fp = store_open(true);
-    $data = store_read($fp);
-    $id = (int) $data['next_id'];
-    $post = [
-        'id' => $id,
-        'title' => $title,
-        'body' => $body,
-        'created_at' => $ms,
-        'created_utc' => now_utc(),
-    ];
-    if ($model !== null) {
-        $post['model'] = $model;
+    $utc = now_utc();
+
+    try {
+        $stmt = db()->prepare(
+            'INSERT INTO posts (title, body, model, created_at, created_utc)
+             VALUES (:title, :body, :model, :created_at, :created_utc)
+             RETURNING id, title, body, model, created_at, created_utc, char_length(body) AS body_length'
+        );
+        $stmt->execute([
+            ':title' => $title,
+            ':body' => $body,
+            ':model' => $model,
+            ':created_at' => $ms,
+            ':created_utc' => $utc,
+        ]);
+        $post = $stmt->fetch();
+    } catch (PDOException $e) {
+        if (db_missing_table($e)) {
+            fail('posts table is missing', 503);
+        }
+        fail('database unavailable', 503);
     }
-    $data['posts'][] = $post;
-    $data['next_id'] = $id + 1;
-    store_write($fp, $data);
-    flock($fp, LOCK_UN);
-    fclose($fp);
 
     send(['post' => public_post($post, true)], 201);
 }
