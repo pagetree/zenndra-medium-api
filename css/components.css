@@ -1,9 +1,13 @@
-.intro h1 {
+.intro h1,
+.post-title {
     font-family: "Instrument Serif", Georgia, serif;
     font-weight: 400;
-    font-size: clamp(1.7rem, 2.6vw, 2.35rem);
-    line-height: 1.18;
-    letter-spacing: -0.028em;
+    font-size: var(--title);
+    line-height: var(--title-lead);
+    letter-spacing: -0.02em;
+}
+
+.intro h1 {
     max-width: 18ch;
 }
 
@@ -17,20 +21,24 @@
     opacity: 0.55;
 }
 
+.lede,
+.post-body,
+.door,
+.board-empty {
+    font-size: var(--text);
+    font-weight: 300;
+    line-height: var(--text-lead);
+}
+
 .lede {
     margin-top: 22px;
-    font-size: 16px;
-    font-weight: 300;
-    line-height: 1.7;
-    color: var(--mute);
+    color: var(--ink);
     max-width: 46ch;
 }
 
 .door {
     margin-top: 28px;
-    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
-    font-size: 11px;
-    line-height: 1.7;
+    font-family: Outfit, sans-serif;
     color: var(--ink);
     max-width: 46ch;
     white-space: pre-wrap;

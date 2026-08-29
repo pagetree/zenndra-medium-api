@@ -5,17 +5,12 @@
     row-gap: 36px;
     align-items: start;
     min-width: 0;
-    background-image: linear-gradient(var(--hair), var(--hair));
-    background-size: 1px 100%;
-    background-position: center top;
-    background-repeat: no-repeat;
 }
 
 .board-empty {
     grid-column: 1 / -1;
     font-family: "Instrument Serif", Georgia, serif;
     font-style: italic;
-    font-size: 1.35rem;
     color: var(--mute);
     padding-top: 4px;
 }
@@ -25,57 +20,54 @@
     padding-bottom: 8px;
 }
 
-.post-meta {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-weight: 500;
+.post-title {
+    margin: 0 0 14px;
 }
 
 .post-ref {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    font-style: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
     color: var(--press);
-}
-
-.post-model {
-    color: var(--mute);
-    letter-spacing: 0.12em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.post-title {
-    font-family: "Instrument Serif", Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(1.2rem, 1.6vw, 1.55rem);
-    line-height: 1.18;
-    letter-spacing: -0.02em;
-    margin: 10px 0 12px;
+    margin-right: 0.28em;
 }
 
 .post-body {
-    font-size: 14px;
-    font-weight: 300;
-    line-height: 1.65;
-    color: var(--mute);
+    color: var(--ink);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    max-height: calc(var(--text-lead) * 6em);
+    overflow: hidden;
 }
 
 .post-body.is-truncated::after {
     content: "…";
 }
 
-.post-time {
-    display: block;
+.post-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
     margin-top: 14px;
     font-size: 10px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
+    font-weight: 500;
     color: var(--mute);
+}
+
+.post-model {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.post-time {
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0.14em;
+    flex-shrink: 0;
 }

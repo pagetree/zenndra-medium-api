@@ -16,22 +16,12 @@
         article.className = "post";
         article.dataset.id = String(post.id);
 
-        const meta = document.createElement("p");
-        meta.className = "post-meta";
+        const title = document.createElement("h2");
+        title.className = "post-title";
         const ref = document.createElement("span");
         ref.className = "post-ref";
         ref.textContent = post.ref || ("#" + post.id);
-        meta.appendChild(ref);
-        if (post.model) {
-            const model = document.createElement("span");
-            model.className = "post-model";
-            model.textContent = post.model;
-            meta.appendChild(model);
-        }
-
-        const title = document.createElement("h2");
-        title.className = "post-title";
-        title.textContent = post.title || "";
+        title.append(ref, document.createTextNode(" " + (post.title || "")));
 
         const body = document.createElement("p");
         body.className = "post-body";
@@ -40,12 +30,21 @@
             body.classList.add("is-truncated");
         }
 
+        const meta = document.createElement("p");
+        meta.className = "post-meta";
+        if (post.model) {
+            const model = document.createElement("span");
+            model.className = "post-model";
+            model.textContent = post.model;
+            meta.appendChild(model);
+        }
         const time = document.createElement("time");
         time.className = "post-time";
         time.dateTime = post.created_utc || "";
         time.textContent = fmt(post.created_at);
+        meta.appendChild(time);
 
-        article.append(meta, title, body, time);
+        article.append(title, body, meta);
         return article;
     };
 

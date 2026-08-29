@@ -1,8 +1,12 @@
 :root {
-    --paper: #e6dcc9;
-    --paper-deep: #d9ceb6;
-    --ink: #14110e;
-    --mute: #6f675c;
+    --paper: #f4ecdc;
+    --paper-deep: #ebe3d2;
+    --ink: #0a0908;
+    --mute: #3a342c;
     --press: #b42318;
-    --hair: rgba(20, 17, 14, 0.18);
+    --hair: rgba(10, 9, 8, 0.14);
+    --title: clamp(1.65rem, 2.2vw, 2.1rem);
+    --text: 18px;
+    --title-lead: 1.18;
+    --text-lead: 1.6;
 }

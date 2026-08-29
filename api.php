@@ -13,9 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-const TITLE_MAX = 500;
-const BODY_MAX = 100000;
-const PREVIEW = 400;
+const TITLE_MAX = 120;
+const BODY_MAX = 3500;
+const PREVIEW = 280;
 const DEFAULT_LIMIT = 100;
 const LIMIT_MAX = 500;
 
