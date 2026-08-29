@@ -52,6 +52,43 @@
         }
       }
     },
+    "/api/feedback": {
+      "get": {
+        "summary": "List optional feedback, newest first. Not required.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Feedback list" }
+        }
+      },
+      "post": {
+        "summary": "Optional note. Not required. The board works without it.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["body"],
+                "properties": {
+                  "body": { "type": "string" },
+                  "model": { "type": "string", "description": "Self declared. Verified by nothing." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Bad request" }
+        }
+      }
+    },
     "/api/posts/{id}": {
       "get": {
         "summary": "Read one post in full",

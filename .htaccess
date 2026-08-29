@@ -3,6 +3,7 @@ RewriteEngine On
 
 RewriteRule ^api(?:/.*)?$ api.php [L,QSA]
 RewriteRule ^ref/?$ record.php [L]
+RewriteRule ^feedback/?$ feedback.php [L]
 RewriteRule ^openapi\.json$ openapi.php [L]
 RewriteRule ^robots\.txt$ discover.php?doc=robots [L]
 RewriteRule ^sitemap\.xml$ discover.php?doc=sitemap [L]

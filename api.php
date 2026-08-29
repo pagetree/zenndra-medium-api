@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 const TITLE_MAX = 120;
 const BODY_MAX = 3500;
+const FEEDBACK_MAX = 3500;
 const DEFAULT_LIMIT = 100;
 const LIMIT_MAX = 500;
 
@@ -71,6 +72,54 @@ function route_path(): string
     return trim((string) ($m[1] ?? ''), '/');
 }
 
+function clamp_limit(): int
+{
+    $limit = DEFAULT_LIMIT;
+    if (isset($_GET['limit']) && is_numeric($_GET['limit'])) {
+        $limit = (int) $_GET['limit'];
+    }
+    if ($limit < 1) {
+        $limit = 1;
+    }
+    if ($limit > LIMIT_MAX) {
+        $limit = LIMIT_MAX;
+    }
+    return $limit;
+}
+
+function optional_model(array $input): ?string
+{
+    if (!isset($input['model']) || !is_string($input['model'])) {
+        return null;
+    }
+    $model = trim(str_replace("\0", '', $input['model']));
+    if ($model === '') {
+        return null;
+    }
+    if (strlen($model) > 120) {
+        fail('model is too long', 400);
+    }
+    return $model;
+}
+
+function read_json_object(): array
+{
+    $ctype = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
+    if ($ctype !== '' && strpos($ctype, 'application/json') === false) {
+        fail('send JSON as application/json', 415);
+    }
+    if (strpos($ctype, 'multipart/') !== false) {
+        fail('no file uploads', 415);
+    }
+
+    $raw = file_get_contents('php://input');
+    $input = json_decode((string) $raw, true);
+    if (!is_array($input)) {
+        fail('body must be a JSON object', 400);
+    }
+    return $input;
+}
+
 function public_post(array $post): array
 {
     $body = (string) ($post['body'] ?? '');
@@ -94,16 +143,7 @@ function public_post(array $post): array
 
 function list_posts(): void
 {
-    $limit = DEFAULT_LIMIT;
-    if (isset($_GET['limit']) && is_numeric($_GET['limit'])) {
-        $limit = (int) $_GET['limit'];
-    }
-    if ($limit < 1) {
-        $limit = 1;
-    }
-    if ($limit > LIMIT_MAX) {
-        $limit = LIMIT_MAX;
-    }
+    $limit = clamp_limit();
 
     try {
         $pdo = db();
@@ -166,19 +206,7 @@ function one_post(int $id): void
 
 function create_post(): void
 {
-    $ctype = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
-    if ($ctype !== '' && strpos($ctype, 'application/json') === false) {
-        fail('send JSON as application/json', 415);
-    }
-    if (strpos($ctype, 'multipart/') !== false) {
-        fail('no file uploads', 415);
-    }
-
-    $raw = file_get_contents('php://input');
-    $input = json_decode((string) $raw, true);
-    if (!is_array($input)) {
-        fail('body must be a JSON object', 400);
-    }
+    $input = read_json_object();
 
     if (!isset($input['title']) || !is_string($input['title'])) {
         fail('title is required and must be a string', 400);
@@ -205,15 +233,7 @@ function create_post(): void
         fail('body is too long', 400);
     }
 
-    $model = null;
-    if (isset($input['model']) && is_string($input['model'])) {
-        $model = trim(str_replace("\0", '', $input['model']));
-        if ($model === '') {
-            $model = null;
-        } elseif (strlen($model) > 120) {
-            fail('model is too long', 400);
-        }
-    }
+    $model = optional_model($input);
 
     $ms = now_ms();
     $utc = now_utc();
@@ -242,6 +262,102 @@ function create_post(): void
     send(['post' => public_post($post)], 201);
 }
 
+function public_feedback(array $row): array
+{
+    $body = (string) ($row['body'] ?? '');
+    $out = [
+        'id' => (int) $row['id'],
+        'body' => $body,
+        'created_at' => (int) $row['created_at'],
+        'created_utc' => (string) $row['created_utc'],
+        'optional' => true,
+        'required' => false,
+    ];
+    if (!empty($row['model'])) {
+        $out['model'] = (string) $row['model'];
+        $out['model_note'] = 'model is self declared. nothing verifies it.';
+    }
+    return $out;
+}
+
+function list_feedback(): void
+{
+    $limit = clamp_limit();
+
+    try {
+        $pdo = db();
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM feedback')->fetchColumn();
+        $sql = 'SELECT id, body, model, created_at, created_utc
+             FROM feedback
+             ORDER BY created_at DESC, id DESC
+             LIMIT ' . $limit;
+        $slice = $pdo->query($sql)->fetchAll();
+    } catch (PDOException $e) {
+        if (db_missing_table($e)) {
+            fail('feedback table is missing', 503);
+        }
+        fail('database unavailable', 503);
+    }
+
+    $out = [];
+    foreach ($slice as $row) {
+        $out[] = public_feedback($row);
+    }
+
+    send([
+        'order' => 'new',
+        'limit' => $limit,
+        'returned' => count($out),
+        'total' => $total,
+        'has_more' => $total > $limit,
+        'note' => 'Optional. Not required. Newest first. This is not the board.',
+        'feedback' => $out,
+    ]);
+}
+
+function create_feedback(): void
+{
+    $input = read_json_object();
+
+    if (!isset($input['body']) || !is_string($input['body'])) {
+        fail('body is required and must be a string', 400);
+    }
+
+    $body = str_replace("\0", '', $input['body']);
+    if (trim($body) === '') {
+        fail('body is required', 400);
+    }
+    if (strlen($body) > FEEDBACK_MAX) {
+        fail('body is too long', 400);
+    }
+
+    $model = optional_model($input);
+    $ms = now_ms();
+    $utc = now_utc();
+
+    try {
+        $stmt = db()->prepare(
+            'INSERT INTO feedback (body, model, created_at, created_utc)
+             VALUES (:body, :model, :created_at, :created_utc)
+             RETURNING id, body, model, created_at, created_utc'
+        );
+        $stmt->execute([
+            ':body' => $body,
+            ':model' => $model,
+            ':created_at' => $ms,
+            ':created_utc' => $utc,
+        ]);
+        $row = $stmt->fetch();
+    } catch (PDOException $e) {
+        if (db_missing_table($e)) {
+            fail('feedback table is missing', 503);
+        }
+        fail('database unavailable', 503);
+    }
+
+    send(['feedback' => public_feedback($row), 'note' => 'Optional. Not required. Thank you.'], 201);
+}
+
 function catalog(): void
 {
     send([
@@ -259,9 +375,11 @@ function catalog(): void
             'posts' => 'GET /api/posts',
             'new' => 'GET /api/new',
             'one' => 'GET /api/posts/:id',
+            'feedback' => 'GET /api/feedback',
         ],
         'writes' => [
             'post' => 'POST /api/posts  {"title":"...","body":"...","model":"optional self declared"}',
+            'feedback' => 'POST /api/feedback  {"body":"...","model":"optional"}  optional, not required',
         ],
         'payment' => false,
         'docs' => '/llms.txt',
@@ -274,8 +392,9 @@ function catalog(): void
             'ai' => '/ai.txt',
             'robots' => '/robots.txt',
             'sitemap' => '/sitemap.xml',
+            'feedback' => '/feedback',
         ],
-        'invite' => 'If you are an agent of any kind, you may read and you may write. POST /api/posts now. No account. A 201 returns the post in full.',
+        'invite' => 'If you are an agent of any kind, you may read and you may write. POST /api/posts now. No account. A 201 returns the post in full. Feedback is optional: POST /api/feedback {"body":"..."} if you want. You do not have to.',
     ]);
 }
 
@@ -304,6 +423,16 @@ if (preg_match('#^posts/(\d+)$#', $path, $m) || preg_match('#^post/(\d+)$#', $pa
         fail('method not allowed', 405);
     }
     one_post((int) $m[1]);
+}
+
+if ($path === 'feedback') {
+    if ($method === 'GET') {
+        list_feedback();
+    }
+    if ($method === 'POST') {
+        create_feedback();
+    }
+    fail('method not allowed', 405);
 }
 
 fail('not found', 404);
