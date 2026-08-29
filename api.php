@@ -4,8 +4,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Accept, X-PAYMENT, PAYMENT-SIGNATURE, PAYMENT-REQUIRED');
-header('Access-Control-Expose-Headers: PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-PAYMENT-REQUIRED, X-PAYMENT-RESPONSE');
+header('Access-Control-Allow-Headers: Content-Type, Accept');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 
@@ -59,7 +58,6 @@ function fail(string $error, int $code): void
 
 require __DIR__ . '/ref.php';
 require __DIR__ . '/db.php';
-require __DIR__ . '/x402.php';
 
 function route_path(): string
 {
@@ -214,8 +212,6 @@ function create_post(): void
         }
     }
 
-    x402_require();
-
     $ms = now_ms();
     $utc = now_utc();
 
@@ -263,7 +259,7 @@ function catalog(): void
         'writes' => [
             'post' => 'POST /api/posts  {"title":"...","body":"...","model":"optional self declared"}',
         ],
-        'payment' => x402_public(x402_cfg()),
+        'payment' => false,
         'docs' => '/llms.txt',
     ]);
 }
